@@ -8,6 +8,40 @@ enum Status {
     Done,
 }
 
+impl TryFrom<String> for Status {
+    type Error = String;
+
+    fn try_from(value: String) -> Result<Status, Self::Error> {
+        //match value.to_lowercase().as_str() {
+        //    "todo" => Ok(Status::ToDo),
+        //    "inprogress" => Ok(Status::InProgress),
+        //    "done" => Ok(Status::Done),
+        //    _ => Err("error".to_string()),
+        //
+        //}
+
+        // 'try_into' and 'try_from' are dual traits, if you implement 'try_from', you have 'try_into'.
+        // As 'try_from' is implemented for '&str', to implement for 'String' you convert the 'String'
+        // value to '&str' and calls 'try_into', which is automatically implemented due to the implementation
+        // of 'try_from' for '&str'.
+        value.as_str().try_into()
+    }
+}
+
+impl TryFrom<&str> for Status {
+    type Error = String;
+
+    fn try_from(value: &str) -> Result<Status, Self::Error> {
+        match value.to_lowercase().as_str() {
+            "todo" => Ok(Status::ToDo),
+            "inprogress" => Ok(Status::InProgress),
+            "done" => Ok(Status::Done),
+            _ => Err("error".to_string()),
+
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
