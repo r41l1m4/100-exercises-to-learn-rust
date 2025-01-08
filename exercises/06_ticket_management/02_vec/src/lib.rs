@@ -10,12 +10,30 @@
 //
 // We expect `fibonacci(0)` to return `0`, `fibonacci(1)` to return `1`,
 // `fibonacci(2)` to return `1`, and so on.
+/*
 pub fn fibonacci(n: u32) -> u32 {
     // TODO: implement the `fibonacci` function
     //
     // Hint: use a `Vec` to memoize the results you have already calculated
     // so that you don't have to recalculate them several times.
-    todo!()
+    if n == 0 {
+        return 0;
+    }
+    if n == 1 || n == 2 {
+        return 1;
+    }
+    fibonacci(n - 1) + fibonacci(n - 2)
+}
+*/
+
+pub fn fibonacci(n: u32) -> u32 {
+    let n = n as usize; // 'Vec's are indexed using 'usize'.
+    let mut memo: Vec<u32> = vec![0, 1];
+
+    for i in 2..=n {
+        memo.push(memo[i - 1] + memo[i - 2]);
+    }
+    memo[n]
 }
 
 #[cfg(test)]
