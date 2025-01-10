@@ -11,6 +11,7 @@ use ticket_fields::{TicketDescription, TicketTitle};
 #[derive(Clone)]
 pub struct TicketStore {
     tickets: Vec<Ticket>,
+    counter: u64,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -41,11 +42,53 @@ impl TicketStore {
     pub fn new() -> Self {
         Self {
             tickets: Vec::new(),
+            counter: 0,
         }
     }
 
-    pub fn add_ticket(&mut self, ticket: Ticket) {
-        self.tickets.push(ticket);
+    /*
+    // This implementation use the size of the Vec of tickets as a way of 'id'ing the tickets,
+    // but it's broken as the items can be removed, and the size of the Vec could lead to
+    // problems.
+    pub fn add_ticket(&mut self, ticket: TicketDraft) -> TicketId {
+        let ticket_id: TicketId;
+
+        if self.tickets.is_empty() {
+            ticket_id = TicketId(0);
+        } else {
+            ticket_id = TicketId(self.tickets.len() as u64);
+        }
+
+        let new_ticket = Ticket {
+            id: ticket_id,
+            title: ticket.title,
+            description: ticket.description,
+            status: Status::ToDo,
+        };
+
+        self.tickets.push(new_ticket);
+        ticket_id
+    }
+     */
+
+    pub fn add_ticket(&mut self, ticket: TicketDraft) -> TicketId {
+        let ticket_id = TicketId(self.counter);
+        self.counter += 1;
+
+        let new_ticket = Ticket {
+            id: ticket_id,
+            title: ticket.title,
+            description: ticket.description,
+            status: Status::ToDo,
+        };
+
+        self.tickets.push(new_ticket);
+        ticket_id
+    }
+
+    pub fn get(&self, ticket_id: TicketId) -> Option<&Ticket> {
+        self.tickets.iter()
+            .find(|ticket| ticket.id == ticket_id)
     }
 }
 
