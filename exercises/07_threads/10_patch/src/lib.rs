@@ -35,7 +35,18 @@ impl TicketStoreClient {
         Ok(response_receiver.recv().unwrap())
     }
 
-    pub fn update(&self, ticket_patch: TicketPatch) -> Result<(), OverloadedError> {}
+    pub fn update(&self, ticket_patch: TicketPatch) -> Result<(), OverloadedError> {
+        let (rx, tx) = sync_channel(1);
+        let command = Command::Update {
+            patch: ticket_patch,
+            response_channel: rx
+        };
+
+        self.sender.try_send(command)
+            .map_err(|_| OverloadedError)?;
+
+        Ok(tx.recv().unwrap())
+    }
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -63,7 +74,7 @@ enum Command {
     },
 }
 
-pub fn server(receiver: Receiver<Command>) {
+fn server(receiver: Receiver<Command>) {
     let mut store = TicketStore::new();
     loop {
         match receiver.recv() {
@@ -85,7 +96,19 @@ pub fn server(receiver: Receiver<Command>) {
                 patch,
                 response_channel,
             }) => {
-                todo!()
+                let to_be_modified_ticket = store.get_mut(patch.id).unwrap();
+
+                if patch.title != None {
+                    to_be_modified_ticket.title = patch.title.unwrap();
+                }
+                if patch.description != None {
+                    to_be_modified_ticket.description = patch.description.unwrap();
+                }
+                if patch.status != None {
+                    to_be_modified_ticket.status = patch.status.unwrap();
+                }
+
+                response_channel.send(()).unwrap()
             }
             Err(_) => {
                 // There are no more senders, so we can safely break
